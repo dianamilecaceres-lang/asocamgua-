@@ -1,0 +1,974 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ASOCAMGUA · Registro de Asociados</title>
+<style>
+  :root{
+    --ink:#1F2A22;
+    --paper:#F1F0E8;
+    --paper-raised:#FFFFFF;
+    --primary:#2F5233;
+    --primary-dark:#213B26;
+    --accent:#C98A2E;
+    --accent-dark:#A66F1F;
+    --line:#D9D4C2;
+    --danger:#A23B2E;
+    --danger-bg:#F6E6E2;
+    --muted:#6B6D5E;
+    --radius:10px;
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:
+      radial-gradient(circle at 100% 0%, rgba(47,82,51,0.06), transparent 45%),
+      var(--paper);
+    color:var(--ink);
+    min-height:100vh;
+  }
+  h1,h2,h3{font-family:Georgia,"Iowan Old Style","Palatino Linotype",serif; margin:0;}
+
+  /* ---------- HEADER ---------- */
+  .topbar{
+    background:var(--primary);
+    color:#EFEAD8;
+    padding:22px 28px 18px;
+    position:relative;
+    overflow:hidden;
+  }
+  .topbar::after{
+    content:"";
+    position:absolute; right:-40px; top:-60px;
+    width:220px; height:220px; border-radius:50%;
+    background:rgba(201,138,46,0.18);
+  }
+  .topbar .eyebrow{
+    font-size:11px; letter-spacing:.14em; text-transform:uppercase;
+    color:#C7D6C6; font-weight:600; margin-bottom:4px;
+  }
+  .topbar h1{font-size:26px; color:#FBF9F2; position:relative;}
+  .topbar p{margin:6px 0 0; color:#D7DFC9; font-size:13.5px; max-width:560px; position:relative;}
+
+  nav.tabs{
+    display:flex; gap:6px; padding:0 28px;
+    background:var(--primary-dark);
+    position:relative;
+  }
+  nav.tabs button{
+    border:none; background:transparent; color:#C9D3C2;
+    padding:12px 16px; font-size:13.5px; font-weight:600;
+    cursor:pointer; border-bottom:3px solid transparent;
+    letter-spacing:.02em;
+  }
+  nav.tabs button.active{
+    color:#FBF9F2; border-bottom-color:var(--accent);
+  }
+
+  main{max-width:920px; margin:0 auto; padding:26px 20px 80px;}
+
+  .view{display:none;}
+  .view.active{display:block;}
+
+  /* ---------- FICHA CARD ---------- */
+  .ficha{
+    background:var(--paper-raised);
+    border:1px solid var(--line);
+    border-radius:var(--radius);
+    margin-bottom:18px;
+    position:relative;
+    box-shadow:0 1px 2px rgba(0,0,0,0.03);
+  }
+  .ficha-tab{
+    position:absolute; top:-11px; left:20px;
+    background:var(--accent); color:#2A1D08;
+    font-size:11px; font-weight:700; letter-spacing:.08em;
+    text-transform:uppercase;
+    padding:4px 12px; border-radius:6px;
+    box-shadow:0 1px 2px rgba(0,0,0,0.15);
+  }
+  .ficha-familiar .ficha-tab{background:var(--primary); color:#EAF1E7;}
+  .ficha-body{padding:26px 22px 20px;}
+  .ficha-familiar{margin-left:22px; border-left:3px solid var(--primary);}
+
+  .field-grid{
+    display:grid; grid-template-columns:1fr 1fr; gap:14px 18px;
+  }
+  @media (max-width:640px){ .field-grid{grid-template-columns:1fr;} }
+
+  .field{display:flex; flex-direction:column; gap:5px;}
+  .field.span-2{grid-column:1/-1;}
+  .field label{
+    font-size:12px; font-weight:700; color:var(--primary-dark);
+    letter-spacing:.01em;
+  }
+  .field label .opt{color:var(--muted); font-weight:400; font-style:italic;}
+  input[type=text], input[type=date], input[type=email], select, textarea{
+    border:1px solid var(--line); border-radius:7px;
+    padding:9px 10px; font-size:13.5px; background:#FEFDFA;
+    color:var(--ink); font-family:inherit;
+  }
+  input:focus, select:focus, textarea:focus{
+    outline:2px solid var(--accent); outline-offset:1px; border-color:var(--accent);
+  }
+
+  .section-title{
+    display:flex; align-items:center; gap:10px;
+    margin:2px 0 16px;
+  }
+  .section-title h3{font-size:17px; color:var(--primary-dark);}
+  .section-title .count-badge{
+    background:var(--primary); color:#EAF1E7; font-family:inherit;
+    font-size:11px; font-weight:700; padding:2px 9px; border-radius:20px;
+  }
+
+  .custom-fields-wrap{margin-top:16px; padding-top:14px; border-top:1px dashed var(--line);}
+  .custom-field-row{display:flex; gap:8px; margin-bottom:8px; align-items:center;}
+  .custom-field-row input{flex:1;}
+  .custom-field-row button{flex-shrink:0;}
+
+  /* ---------- BUTTONS ---------- */
+  button{cursor:pointer; font-family:inherit;}
+  .btn{
+    border:none; border-radius:7px; padding:9px 15px;
+    font-size:13px; font-weight:700; letter-spacing:.01em;
+  }
+  .btn-primary{background:var(--primary); color:#EFEAD8;}
+  .btn-primary:hover{background:var(--primary-dark);}
+  .btn-accent{background:var(--accent); color:#2A1D08;}
+  .btn-accent:hover{background:var(--accent-dark);}
+  .btn-ghost{background:transparent; color:var(--primary-dark); border:1px solid var(--line);}
+  .btn-ghost:hover{background:#EEEBDE;}
+  .btn-danger{background:var(--danger-bg); color:var(--danger);}
+  .btn-danger:hover{background:#EFD3CC;}
+  .btn-sm{padding:5px 10px; font-size:11.5px; border-radius:6px;}
+  .btn-remove-familiar{
+    position:absolute; top:14px; right:16px;
+  }
+
+  .actions-row{display:flex; gap:10px; flex-wrap:wrap; margin-top:6px;}
+
+  .add-familiar-bar{
+    display:flex; justify-content:center; margin:6px 0 22px;
+  }
+
+  .submit-bar{
+    position:sticky; bottom:0;
+    background:var(--paper); padding:14px 0 4px;
+    display:flex; justify-content:flex-end; gap:10px;
+    border-top:1px solid var(--line); margin-top:8px;
+  }
+
+  .toast{
+    position:fixed; bottom:22px; left:50%; transform:translateX(-50%);
+    background:var(--primary-dark); color:#EFEAD8;
+    padding:11px 20px; border-radius:8px; font-size:13.5px;
+    box-shadow:0 4px 14px rgba(0,0,0,0.25);
+    opacity:0; pointer-events:none; transition:opacity .25s, transform .25s;
+    z-index:50;
+  }
+  .toast.show{opacity:1; transform:translateX(-50%) translateY(-6px);}
+
+  /* ---------- CONSULTAR ---------- */
+  .search-row{display:flex; gap:10px; margin-bottom:16px;}
+  .search-row input{flex:1;}
+  .registro-card{
+    background:var(--paper-raised); border:1px solid var(--line);
+    border-radius:var(--radius); padding:16px 18px; margin-bottom:12px;
+    cursor:pointer;
+  }
+  .registro-card:hover{border-color:var(--primary);}
+  .registro-card .row1{display:flex; justify-content:space-between; align-items:baseline; gap:10px;}
+  .registro-card h3{font-size:15.5px; color:var(--primary-dark);}
+  .registro-card .meta{font-size:12px; color:var(--muted);}
+  .registro-card .badge-fam{
+    font-size:11px; background:#EEE8D3; color:var(--accent-dark);
+    padding:2px 9px; border-radius:20px; font-weight:700;
+  }
+  .empty-state{
+    text-align:center; padding:50px 20px; color:var(--muted);
+  }
+  .empty-state h3{color:var(--primary-dark); margin-bottom:6px;}
+
+  .detail-overlay{
+    position:fixed; inset:0; background:rgba(31,42,34,0.45);
+    display:none; align-items:flex-start; justify-content:center;
+    padding:30px 16px; overflow-y:auto; z-index:40;
+  }
+  .detail-overlay.show{display:flex;}
+  .detail-panel{
+    background:var(--paper-raised); border-radius:var(--radius);
+    max-width:640px; width:100%; padding:26px 24px; margin-bottom:40px;
+  }
+  .detail-panel h2{font-size:19px; color:var(--primary-dark); margin-bottom:4px;}
+  .detail-panel .sub{color:var(--muted); font-size:12.5px; margin-bottom:18px;}
+  .detail-panel dl{display:grid; grid-template-columns:1fr 1fr; gap:8px 14px; margin:0 0 18px;}
+  .detail-panel dt{font-size:11px; font-weight:700; color:var(--primary-dark); text-transform:uppercase; letter-spacing:.03em;}
+  .detail-panel dd{margin:0 0 8px; font-size:13.5px;}
+  .detail-panel h4{font-size:13px; color:var(--accent-dark); text-transform:uppercase; letter-spacing:.04em; margin:14px 0 8px; border-top:1px dashed var(--line); padding-top:14px;}
+  .detail-close-row{display:flex; justify-content:flex-end; gap:8px;}
+
+  .note-banner{
+    font-size:12px; color:var(--muted); background:#EAE8DB;
+    border:1px solid var(--line); border-radius:8px; padding:9px 12px; margin-bottom:18px;
+  }
+
+  ::placeholder{color:#9C9887;}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="eyebrow">ASOCAMGUA</div>
+  <h1>Sistema de Registro de Asociados</h1>
+  <p>Registra al asociado y su grupo familiar en una sola ficha. La información queda guardada y puede consultarse en cualquier momento.</p>
+</div>
+<nav class="tabs">
+  <button class="active" data-view="registro">Nuevo registro</button>
+  <button data-view="consultar">Consultar registros</button>
+</nav>
+
+<main>
+
+  <!-- ===================== VISTA: NUEVO REGISTRO ===================== -->
+  <div class="view active" id="view-registro">
+    <div class="note-banner">Los registros se guardan en una Google Sheet conectada a este formulario. Antes de usarlo, configura la URL del script de Google (ver instrucciones y archivo Code.gs) en la línea SCRIPT_URL del código.</div>
+
+    <form id="form-registro">
+      <!-- FICHA ASOCIADO -->
+      <div class="ficha">
+        <span class="ficha-tab">Asociado</span>
+        <div class="ficha-body">
+          <div class="section-title"><h3>Datos del asociado</h3></div>
+          <div class="field-grid" id="asociado-fields"></div>
+          <div class="custom-fields-wrap">
+            <div id="asociado-custom-list"></div>
+            <button type="button" class="btn btn-ghost btn-sm" onclick="addCustomField('asociado-custom-list')">+ Agregar campo personalizado</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- GRUPO FAMILIAR -->
+      <div class="section-title" style="margin-top:26px;">
+        <h3>Grupo familiar</h3>
+        <span class="count-badge" id="familiar-count">0</span>
+      </div>
+      <div id="familiares-container"></div>
+      <div class="add-familiar-bar">
+        <button type="button" class="btn btn-accent" onclick="addFamiliar()">+ Agregar integrante al grupo familiar</button>
+      </div>
+
+      <div class="submit-bar">
+        <button type="button" class="btn btn-ghost" onclick="resetForm()">Limpiar formulario</button>
+        <button type="submit" class="btn btn-primary">Guardar registro</button>
+      </div>
+    </form>
+  </div>
+
+  <!-- ===================== VISTA: CONSULTAR ===================== -->
+  <div class="view" id="view-consultar">
+    <div class="search-row">
+      <input type="text" id="search-input" placeholder="Buscar por nombre o número de identificación...">
+      <button class="btn btn-ghost" onclick="exportCSV()">Exportar CSV</button>
+    </div>
+    <div id="registros-list"></div>
+  </div>
+
+</main>
+
+<div class="detail-overlay" id="detail-overlay">
+  <div class="detail-panel" id="detail-panel"></div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* ============================================================
+   CONFIG: opciones de campos reutilizables
+============================================================ */
+const OPT_TIPO_ID = ['Cédula','Registro Civil','NUIP','Cédula de Extranjería','Otro'];
+const OPT_NIVEL_EDU = ['Sin estudio','Primaria','Secundaria','Técnico','Tecnólogo','Profesional universitario','Otro'];
+const OPT_SEXO = ['Hombre','Mujer'];
+const OPT_IDENTIDAD_GENERO = ['Femenino','Masculino','Otro'];
+const OPT_GRUPO_ETNICO = ['Mestizo','Afrocolombiano','Indígena','Otro'];
+const OPT_DISCAPACIDAD = ['Ninguna','Física o motora','Visual','Auditiva','Psicosocial o mental','Otra'];
+const OPT_SI_NO = ['Sí','No'];
+
+let familiarSeq = 0; // unique counter for family member blocks
+
+/* ============================================================
+   BUILD FIELD HTML
+============================================================ */
+function selectOptions(options){
+  return '<option value="">Seleccione...</option>' + options.map(o=>`<option value="${o}">${o}</option>`).join('');
+}
+
+// Builds the full set of person fields (used both for asociado and each familiar)
+function personFieldsHTML(prefix, isFamiliar){
+  const parentescoField = isFamiliar ? `
+    <div class="field span-2">
+      <label>Parentesco</label>
+      <input type="text" name="${prefix}_parentesco" placeholder="Ej: Cónyuge, Hijo/a, Madre..." required>
+    </div>` : '';
+
+  const fechaExpedicion = isFamiliar ? '' : `
+    <div class="field">
+      <label>Fecha de expedición</label>
+      <input type="date" name="${prefix}_fecha_expedicion">
+    </div>`;
+
+  const lugarExpedicion = isFamiliar ? '' : `
+    <div class="field">
+      <label>Lugar de expedición</label>
+      <input type="text" name="${prefix}_lugar_expedicion">
+    </div>`;
+
+  return `
+    ${parentescoField}
+    <div class="field">
+      <label>Tipo de identificación</label>
+      <select name="${prefix}_tipo_id" required>${selectOptions(OPT_TIPO_ID)}</select>
+    </div>
+    <div class="field">
+      <label>Número de identificación</label>
+      <input type="text" name="${prefix}_numero_id" required>
+    </div>
+    ${lugarExpedicion}
+    ${fechaExpedicion}
+    <div class="field span-2">
+      <label>Nombre completo</label>
+      <input type="text" name="${prefix}_nombre" required>
+    </div>
+    <div class="field">
+      <label>Fecha de nacimiento</label>
+      <input type="date" name="${prefix}_fecha_nacimiento">
+    </div>
+    <div class="field">
+      <label>Correo electrónico <span class="opt">(opcional)</span></label>
+      <input type="email" name="${prefix}_correo">
+    </div>
+    <div class="field">
+      <label>Sexo asignado al nacer</label>
+      <select name="${prefix}_sexo">${selectOptions(OPT_SEXO)}</select>
+    </div>
+    <div class="field">
+      <label>Nivel educativo</label>
+      <select name="${prefix}_nivel_educativo" onchange="toggleProfesion(this,'${prefix}')">${selectOptions(OPT_NIVEL_EDU)}</select>
+    </div>
+    <div class="field span-2" id="${prefix}_profesion_wrap" style="display:none;">
+      <label>¿Cuál es su profesión?</label>
+      <input type="text" name="${prefix}_profesion">
+    </div>
+    <div class="field span-2">
+      <label>Ocupación actual <span class="opt">(¿a qué se dedica actualmente?)</span></label>
+      <input type="text" name="${prefix}_ocupacion">
+    </div>
+    <div class="field">
+      <label>Identidad de género</label>
+      <select name="${prefix}_identidad_genero">${selectOptions(OPT_IDENTIDAD_GENERO)}</select>
+    </div>
+    <div class="field">
+      <label>Grupo étnico</label>
+      <select name="${prefix}_grupo_etnico">${selectOptions(OPT_GRUPO_ETNICO)}</select>
+    </div>
+    <div class="field">
+      <label>Presenta discapacidad</label>
+      <select name="${prefix}_discapacidad">${selectOptions(OPT_DISCAPACIDAD)}</select>
+    </div>
+    <div class="field">
+      <label>¿Es víctima del conflicto?</label>
+      <select name="${prefix}_victima_conflicto">${selectOptions(OPT_SI_NO)}</select>
+    </div>
+    <div class="field span-2">
+      <label>¿Es desplazado?</label>
+      <select name="${prefix}_desplazado" style="max-width:200px;">${selectOptions(OPT_SI_NO)}</select>
+    </div>
+  `;
+}
+
+function toggleProfesion(selectEl, prefix){
+  const wrap = document.getElementById(prefix + '_profesion_wrap');
+  const showFor = ['Técnico', 'Tecnólogo', 'Profesional universitario'];
+  wrap.style.display = showFor.includes(selectEl.value) ? 'flex' : 'none';
+}
+
+/* ============================================================
+   PRELLENAR CAMPOS DE UNA PERSONA (usado al editar)
+============================================================ */
+function fillPersonFields(prefix, person, isFamiliar, customListId){
+  const set = (name, value) => {
+    const el = document.querySelector(`[name="${prefix}_${name}"]`);
+    if(el) el.value = value || '';
+  };
+  set('tipo_id', person.tipo_id);
+  set('numero_id', person.numero_id);
+  set('lugar_expedicion', person.lugar_expedicion);
+  set('nombre', person.nombre);
+  set('fecha_nacimiento', person.fecha_nacimiento);
+  set('correo', person.correo);
+  set('sexo', person.sexo);
+  set('nivel_educativo', person.nivel_educativo);
+  set('profesion', person.profesion);
+  set('ocupacion', person.ocupacion);
+  set('identidad_genero', person.identidad_genero);
+  set('grupo_etnico', person.grupo_etnico);
+  set('discapacidad', person.discapacidad);
+  set('victima_conflicto', person.victima_conflicto);
+  set('desplazado', person.desplazado);
+  if(isFamiliar){
+    set('parentesco', person.parentesco);
+  } else {
+    set('fecha_expedicion', person.fecha_expedicion);
+  }
+  const nivelSelect = document.querySelector(`[name="${prefix}_nivel_educativo"]`);
+  if(nivelSelect) toggleProfesion(nivelSelect, prefix);
+
+  if(customListId && person.custom_fields){
+    person.custom_fields.forEach(cf => addCustomField(customListId, cf));
+  }
+}
+
+/* ============================================================
+   CUSTOM FIELDS (campos personalizados)
+============================================================ */
+function addCustomField(containerId, prefill){
+  const container = document.getElementById(containerId);
+  const row = document.createElement('div');
+  row.className = 'custom-field-row';
+  row.innerHTML = `
+    <input type="text" class="custom-label" placeholder="Nombre del campo" value="${prefill ? escapeHTML(prefill.label) : ''}">
+    <input type="text" class="custom-value" placeholder="Valor" value="${prefill ? escapeHTML(prefill.value) : ''}">
+    <button type="button" class="btn btn-danger btn-sm" onclick="this.parentElement.remove()">Quitar</button>
+  `;
+  container.appendChild(row);
+}
+
+function readCustomFields(containerId){
+  const container = document.getElementById(containerId);
+  const rows = container.querySelectorAll('.custom-field-row');
+  const out = [];
+  rows.forEach(r=>{
+    const label = r.querySelector('.custom-label').value.trim();
+    const value = r.querySelector('.custom-value').value.trim();
+    if(label) out.push({label, value});
+  });
+  return out;
+}
+
+/* ============================================================
+   GRUPO FAMILIAR: agregar / eliminar integrantes
+============================================================ */
+function addFamiliar(){
+  familiarSeq++;
+  const id = 'fam' + familiarSeq;
+  const container = document.getElementById('familiares-container');
+  const card = document.createElement('div');
+  card.className = 'ficha ficha-familiar';
+  card.dataset.famId = id;
+  card.innerHTML = `
+    <span class="ficha-tab">Familiar</span>
+    <button type="button" class="btn btn-danger btn-sm btn-remove-familiar" onclick="removeFamiliar('${id}')">Eliminar integrante</button>
+    <div class="ficha-body">
+      <div class="field-grid">${personFieldsHTML(id, true)}</div>
+      <div class="custom-fields-wrap">
+        <div id="${id}-custom-list"></div>
+        <button type="button" class="btn btn-ghost btn-sm" onclick="addCustomField('${id}-custom-list')">+ Agregar campo personalizado</button>
+      </div>
+    </div>
+  `;
+  container.appendChild(card);
+  updateFamiliarCount();
+}
+
+function removeFamiliar(id){
+  const card = document.querySelector(`[data-fam-id="${id}"]`);
+  if(card) card.remove();
+  updateFamiliarCount();
+}
+
+function updateFamiliarCount(){
+  const count = document.querySelectorAll('#familiares-container .ficha-familiar').length;
+  document.getElementById('familiar-count').textContent = count;
+}
+
+/* ============================================================
+   INIT FORM
+============================================================ */
+function initForm(){
+  document.getElementById('asociado-fields').innerHTML = personFieldsHTML('asociado', false);
+}
+initForm();
+
+/* ============================================================
+   RECOLECTAR DATOS DE UNA PERSONA A PARTIR DEL FORM
+============================================================ */
+function readPerson(form, prefix, isFamiliar, customListId){
+  const get = (name) => {
+    const el = form.querySelector(`[name="${prefix}_${name}"]`);
+    return el ? el.value.trim() : '';
+  };
+  const person = {
+    tipo_id: get('tipo_id'),
+    numero_id: get('numero_id'),
+    lugar_expedicion: get('lugar_expedicion'),
+    nombre: get('nombre'),
+    fecha_nacimiento: get('fecha_nacimiento'),
+    correo: get('correo'),
+    sexo: get('sexo'),
+    nivel_educativo: get('nivel_educativo'),
+    profesion: get('profesion'),
+    ocupacion: get('ocupacion'),
+    identidad_genero: get('identidad_genero'),
+    grupo_etnico: get('grupo_etnico'),
+    discapacidad: get('discapacidad'),
+    victima_conflicto: get('victima_conflicto'),
+    desplazado: get('desplazado'),
+    custom_fields: readCustomFields(customListId)
+  };
+  if(isFamiliar){
+    person.parentesco = get('parentesco');
+  } else {
+    person.fecha_expedicion = get('fecha_expedicion');
+  }
+  return person;
+}
+
+/* ============================================================
+   GUARDAR REGISTRO EN GOOGLE SHEETS (vía Google Apps Script)
+   ------------------------------------------------------------
+   1. Crea una Google Sheet y en Extensiones > Apps Script pega
+      el código que Claude te dio para Code.gs.
+   2. Impleméntalo como "Aplicación web" (acceso: "Cualquier usuario").
+   3. Pega aquí abajo la URL que te entrega esa implementación.
+============================================================ */
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxED4lx95j-fjUt9r-2VH4p1dkFwOOjQroTP39UxpSQpncxf16e2oSB1gtpP-R5iT0/exec";
+
+function personToRow(id_registro, fecha_registro, tipo_registro, parentesco, p){
+  return {
+    id_registro, fecha_registro, tipo_registro, parentesco: parentesco || '',
+    tipo_id: p.tipo_id, numero_id: p.numero_id, lugar_expedicion: p.lugar_expedicion,
+    fecha_expedicion: p.fecha_expedicion || '', nombre: p.nombre, fecha_nacimiento: p.fecha_nacimiento,
+    correo: p.correo, sexo: p.sexo, identidad_genero: p.identidad_genero,
+    nivel_educativo: p.nivel_educativo, profesion: p.profesion, ocupacion: p.ocupacion,
+    grupo_etnico: p.grupo_etnico, discapacidad: p.discapacidad, victima_conflicto: p.victima_conflicto,
+    desplazado: p.desplazado, custom_fields: JSON.stringify(p.custom_fields || [])
+  };
+}
+
+function rowToPerson(row){
+  let custom_fields = [];
+  try{ custom_fields = JSON.parse(row.custom_fields || '[]'); } catch(e){}
+  return {
+    parentesco: row.parentesco, tipo_id: row.tipo_id, numero_id: row.numero_id,
+    lugar_expedicion: row.lugar_expedicion, fecha_expedicion: row.fecha_expedicion,
+    nombre: row.nombre, fecha_nacimiento: row.fecha_nacimiento, correo: row.correo,
+    sexo: row.sexo, identidad_genero: row.identidad_genero, nivel_educativo: row.nivel_educativo,
+    profesion: row.profesion, ocupacion: row.ocupacion, grupo_etnico: row.grupo_etnico,
+    discapacidad: row.discapacidad, victima_conflicto: row.victima_conflicto, desplazado: row.desplazado,
+    custom_fields
+  };
+}
+
+async function saveRegistroToSheet(registro){
+  try{
+    const rows = [];
+    rows.push(personToRow(registro.id, registro.fecha_registro, 'Asociado', '', registro.asociado));
+    registro.grupo_familiar.forEach(f=>{
+      rows.push(personToRow(registro.id, registro.fecha_registro, 'Familiar', f.parentesco, f));
+    });
+    const res = await fetch(SCRIPT_URL, {
+      method: 'POST',
+      headers: {'Content-Type': 'text/plain;charset=utf-8'}, // evita preflight CORS con Apps Script
+      body: JSON.stringify({ action: 'insert', rows })
+    });
+    const data = await res.json();
+    return !!data.ok;
+  } catch(e){
+    console.error('Error guardando en Sheets', e);
+    return false;
+  }
+}
+
+async function loadRegistrosFromSheet(){
+  try{
+    const res = await fetch(SCRIPT_URL);
+    const rows = await res.json();
+    const map = {};
+    rows.forEach(row=>{
+      if(!row.id_registro) return;
+      if(!map[row.id_registro]){
+        map[row.id_registro] = { id: row.id_registro, fecha_registro: row.fecha_registro, asociado: null, grupo_familiar: [] };
+      }
+      const person = rowToPerson(row);
+      if(row.tipo_registro === 'Asociado') map[row.id_registro].asociado = person;
+      else map[row.id_registro].grupo_familiar.push(person);
+    });
+    return Object.values(map)
+      .filter(r=>r.asociado)
+      .sort((a,b)=> new Date(b.fecha_registro) - new Date(a.fecha_registro));
+  } catch(e){
+    console.error('Error leyendo de Sheets', e);
+    return [];
+  }
+}
+
+async function deleteRegistroInSheet(id){
+  try{
+    const res = await fetch(SCRIPT_URL, {
+      method: 'POST',
+      headers: {'Content-Type': 'text/plain;charset=utf-8'},
+      body: JSON.stringify({ action: 'delete', id_registro: id })
+    });
+    const data = await res.json();
+    return !!data.ok;
+  } catch(e){
+    console.error('Error eliminando en Sheets', e);
+    return false;
+  }
+}
+
+function showToast(msg){
+  const toast = document.getElementById('toast');
+  toast.textContent = msg;
+  toast.classList.add('show');
+  setTimeout(()=>toast.classList.remove('show'), 2600);
+}
+
+document.getElementById('form-registro').addEventListener('submit', async (e)=>{
+  e.preventDefault();
+  const form = e.target;
+
+  const asociado = readPerson(form, 'asociado', false, 'asociado-custom-list');
+  if(!asociado.nombre || !asociado.numero_id || !asociado.tipo_id){
+    showToast('Completa al menos nombre, tipo y número de identificación del asociado.');
+    return;
+  }
+
+  const familiarCards = document.querySelectorAll('#familiares-container .ficha-familiar');
+  const grupo_familiar = [];
+  familiarCards.forEach(card=>{
+    const famId = card.dataset.famId;
+    const p = readPerson(form, famId, true, famId + '-custom-list');
+    grupo_familiar.push(p);
+  });
+
+  const registro = {
+    id: 'reg_' + Date.now() + '_' + Math.random().toString(36).slice(2,8),
+    fecha_registro: new Date().toISOString(),
+    asociado,
+    grupo_familiar
+  };
+
+  const submitBtn = form.querySelector('button[type=submit]');
+  submitBtn.disabled = true;
+  submitBtn.textContent = 'Guardando...';
+
+  const ok = await saveRegistroToSheet(registro);
+
+  submitBtn.disabled = false;
+  submitBtn.textContent = 'Guardar registro';
+
+  if(ok){
+    showToast('Registro guardado correctamente.');
+    resetForm();
+  } else {
+    showToast('Hubo un problema guardando el registro. Intenta de nuevo.');
+  }
+});
+
+function resetForm(){
+  document.getElementById('form-registro').reset();
+  document.getElementById('familiares-container').innerHTML = '';
+  document.getElementById('asociado-custom-list').innerHTML = '';
+  updateFamiliarCount();
+  document.querySelectorAll('[id$="_profesion_wrap"]').forEach(w=>w.style.display='none');
+}
+
+/* ============================================================
+   NAVEGACIÓN ENTRE VISTAS (con acceso protegido a "Consultar")
+   ------------------------------------------------------------
+   Cambia esta contraseña por la que quieras usar como equipo
+   administrador de ASOCAMGUA. No es una seguridad perfecta
+   (el código es visible para quien sepa buscarlo), pero evita
+   que cualquier asociado entre a ver, editar o borrar registros
+   por accidente o curiosidad.
+============================================================ */
+const ADMIN_PASSWORD = "asocamgua2026";
+let adminUnlocked = false;
+
+document.querySelectorAll('nav.tabs button').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    if(btn.dataset.view === 'consultar' && !adminUnlocked){
+      const pass = prompt('Esta sección es solo para el equipo administrador.\nIngresa la contraseña:');
+      if(pass !== ADMIN_PASSWORD){
+        if(pass !== null) showToast('Contraseña incorrecta.');
+        return;
+      }
+      adminUnlocked = true;
+    }
+    document.querySelectorAll('nav.tabs button').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+    document.getElementById('view-' + btn.dataset.view).classList.add('active');
+    if(btn.dataset.view === 'consultar') renderRegistrosList();
+  });
+});
+
+/* ============================================================
+   CONSULTAR REGISTROS
+============================================================ */
+let registrosCache = [];
+
+async function renderRegistrosList(){
+  const listEl = document.getElementById('registros-list');
+  listEl.innerHTML = '<div class="empty-state">Cargando registros...</div>';
+  registrosCache = await loadRegistrosFromSheet();
+  paintList(registrosCache);
+}
+
+function paintList(list){
+  const listEl = document.getElementById('registros-list');
+  if(list.length === 0){
+    listEl.innerHTML = `<div class="empty-state"><h3>Aún no hay registros</h3><p>Los asociados que registres aparecerán aquí.</p></div>`;
+    return;
+  }
+  listEl.innerHTML = list.map(r=>{
+    const fecha = new Date(r.fecha_registro).toLocaleDateString('es-CO', {year:'numeric', month:'short', day:'numeric'});
+    return `
+      <div class="registro-card" onclick="openDetail('${r.id}')">
+        <div class="row1">
+          <h3>${escapeHTML(r.asociado.nombre || '(Sin nombre)')}</h3>
+          <span class="badge-fam">${r.grupo_familiar.length} familiar${r.grupo_familiar.length===1?'':'es'}</span>
+        </div>
+        <div class="meta">${escapeHTML(r.asociado.tipo_id)} ${escapeHTML(r.asociado.numero_id)} · Registrado el ${fecha}</div>
+      </div>
+    `;
+  }).join('');
+}
+
+document.getElementById('search-input').addEventListener('input', (e)=>{
+  const q = e.target.value.trim().toLowerCase();
+  if(!q){ paintList(registrosCache); return; }
+  const filtered = registrosCache.filter(r=>
+    (r.asociado.nombre||'').toLowerCase().includes(q) ||
+    (r.asociado.numero_id||'').toLowerCase().includes(q) ||
+    r.grupo_familiar.some(f => (f.nombre||'').toLowerCase().includes(q) || (f.numero_id||'').toLowerCase().includes(q))
+  );
+  paintList(filtered);
+});
+
+function escapeHTML(str){
+  const div = document.createElement('div');
+  div.textContent = str || '';
+  return div.innerHTML;
+}
+
+function personDetailHTML(p, isFamiliar){
+  return `
+    <dl>
+      ${isFamiliar ? `<dt>Parentesco</dt><dd>${escapeHTML(p.parentesco)}</dd>` : ''}
+      <dt>Identificación</dt><dd>${escapeHTML(p.tipo_id)} ${escapeHTML(p.numero_id)}</dd>
+      ${!isFamiliar ? `<dt>Lugar de expedición</dt><dd>${escapeHTML(p.lugar_expedicion)}</dd>` : ''}
+      ${!isFamiliar ? `<dt>Fecha de expedición</dt><dd>${escapeHTML(p.fecha_expedicion)}</dd>` : ''}
+      <dt>Fecha de nacimiento</dt><dd>${escapeHTML(p.fecha_nacimiento)}</dd>
+      <dt>Correo</dt><dd>${escapeHTML(p.correo)}</dd>
+      <dt>Sexo asignado al nacer</dt><dd>${escapeHTML(p.sexo)}</dd>
+      <dt>Identidad de género</dt><dd>${escapeHTML(p.identidad_genero)}</dd>
+      <dt>Nivel educativo</dt><dd>${escapeHTML(p.nivel_educativo)}${p.profesion ? ' – ' + escapeHTML(p.profesion) : ''}</dd>
+      <dt>Ocupación actual</dt><dd>${escapeHTML(p.ocupacion)}</dd>
+      <dt>Grupo étnico</dt><dd>${escapeHTML(p.grupo_etnico)}</dd>
+      <dt>Discapacidad</dt><dd>${escapeHTML(p.discapacidad)}</dd>
+      <dt>Víctima del conflicto</dt><dd>${escapeHTML(p.victima_conflicto)}</dd>
+      <dt>Desplazado</dt><dd>${escapeHTML(p.desplazado)}</dd>
+    </dl>
+    ${p.custom_fields && p.custom_fields.length ? `
+      <h4>Campos personalizados</h4>
+      <dl>${p.custom_fields.map(c=>`<dt>${escapeHTML(c.label)}</dt><dd>${escapeHTML(c.value)}</dd>`).join('')}</dl>
+    ` : ''}
+  `;
+}
+
+function openDetail(id){
+  const r = registrosCache.find(x=>x.id===id);
+  if(!r) return;
+  const fecha = new Date(r.fecha_registro).toLocaleString('es-CO');
+  const panel = document.getElementById('detail-panel');
+  panel.innerHTML = `
+    <h2>${escapeHTML(r.asociado.nombre)}</h2>
+    <div class="sub">Registrado el ${fecha}</div>
+    <h4 style="margin-top:0; border-top:none; padding-top:0;">Datos del asociado</h4>
+    ${personDetailHTML(r.asociado, false)}
+    ${r.grupo_familiar.map((f,i)=>`
+      <h4>Grupo familiar — ${escapeHTML(f.parentesco) || 'Integrante ' + (i+1)}</h4>
+      ${personDetailHTML(f, true)}
+    `).join('')}
+    <div class="detail-close-row">
+      <button class="btn btn-danger" onclick="deleteRegistro('${r.id}')">Eliminar registro</button>
+      <button class="btn btn-accent" onclick="openEditForm('${r.id}')">Editar registro</button>
+      <button class="btn btn-primary" onclick="closeDetail()">Cerrar</button>
+    </div>
+  `;
+  document.getElementById('detail-overlay').classList.add('show');
+}
+
+function closeDetail(){
+  document.getElementById('detail-overlay').classList.remove('show');
+}
+
+async function deleteRegistro(id){
+  if(!confirm('¿Seguro que deseas eliminar este registro? Esta acción no se puede deshacer.')) return;
+  const ok = await deleteRegistroInSheet(id);
+  if(!ok){
+    showToast('Hubo un problema eliminando el registro.');
+    return;
+  }
+  registrosCache = registrosCache.filter(r=>r.id!==id);
+  closeDetail();
+  paintList(registrosCache);
+  showToast('Registro eliminado.');
+}
+
+/* ============================================================
+   EDITAR REGISTRO
+============================================================ */
+let editFamiliarSeq = 0;
+
+function addEditFamiliar(prefillFamiliar){
+  editFamiliarSeq++;
+  const id = 'efam' + editFamiliarSeq;
+  const container = document.getElementById('edit-familiares-container');
+  const card = document.createElement('div');
+  card.className = 'ficha ficha-familiar';
+  card.dataset.famId = id;
+  card.innerHTML = `
+    <span class="ficha-tab">Familiar</span>
+    <button type="button" class="btn btn-danger btn-sm btn-remove-familiar" onclick="removeEditFamiliar('${id}')">Eliminar integrante</button>
+    <div class="ficha-body">
+      <div class="field-grid">${personFieldsHTML(id, true)}</div>
+      <div class="custom-fields-wrap">
+        <div id="${id}-custom-list"></div>
+        <button type="button" class="btn btn-ghost btn-sm" onclick="addCustomField('${id}-custom-list')">+ Agregar campo personalizado</button>
+      </div>
+    </div>
+  `;
+  container.appendChild(card);
+  if(prefillFamiliar){
+    fillPersonFields(id, prefillFamiliar, true, id + '-custom-list');
+  }
+}
+
+function removeEditFamiliar(id){
+  const card = document.querySelector(`[data-fam-id="${id}"]`);
+  if(card) card.remove();
+}
+
+function openEditForm(id){
+  const r = registrosCache.find(x=>x.id===id);
+  if(!r) return;
+  const panel = document.getElementById('detail-panel');
+
+  panel.innerHTML = `
+    <h2>Editar registro</h2>
+    <div class="sub">${escapeHTML(r.asociado.nombre)}</div>
+    <form id="edit-form">
+      <div class="ficha" style="margin-top:14px;">
+        <span class="ficha-tab">Asociado</span>
+        <div class="ficha-body">
+          <div class="field-grid">${personFieldsHTML('edit_asociado', false)}</div>
+          <div class="custom-fields-wrap">
+            <div id="edit_asociado-custom-list"></div>
+            <button type="button" class="btn btn-ghost btn-sm" onclick="addCustomField('edit_asociado-custom-list')">+ Agregar campo personalizado</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="section-title" style="margin-top:22px;">
+        <h3>Grupo familiar</h3>
+      </div>
+      <div id="edit-familiares-container"></div>
+      <div class="add-familiar-bar">
+        <button type="button" class="btn btn-accent" onclick="addEditFamiliar()">+ Agregar integrante</button>
+      </div>
+
+      <div class="detail-close-row" style="margin-top:16px;">
+        <button type="button" class="btn btn-ghost" onclick="openDetail('${r.id}')">Cancelar</button>
+        <button type="submit" class="btn btn-primary">Guardar cambios</button>
+      </div>
+    </form>
+  `;
+
+  fillPersonFields('edit_asociado', r.asociado, false, 'edit_asociado-custom-list');
+  r.grupo_familiar.forEach(f => addEditFamiliar(f));
+
+  document.getElementById('edit-form').addEventListener('submit', async (e)=>{
+    e.preventDefault();
+    const form = e.target;
+    const asociado = readPerson(form, 'edit_asociado', false, 'edit_asociado-custom-list');
+    const familiarCards = document.querySelectorAll('#edit-familiares-container .ficha-familiar');
+    const grupo_familiar = [];
+    familiarCards.forEach(card=>{
+      const famId = card.dataset.famId;
+      grupo_familiar.push(readPerson(form, famId, true, famId + '-custom-list'));
+    });
+
+    const updated = { id: r.id, fecha_registro: r.fecha_registro, asociado, grupo_familiar };
+
+    const submitBtn = form.querySelector('button[type=submit]');
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Guardando...';
+
+    // Reemplaza el registro: borra las filas viejas y guarda las nuevas
+    const deleted = await deleteRegistroInSheet(r.id);
+    const saved = deleted && await saveRegistroToSheet(updated);
+
+    if(saved){
+      registrosCache = registrosCache.map(x => x.id === r.id ? updated : x);
+      showToast('Registro actualizado correctamente.');
+      openDetail(r.id);
+      paintList(registrosCache);
+    } else {
+      showToast('Hubo un problema guardando los cambios.');
+      submitBtn.disabled = false;
+      submitBtn.textContent = 'Guardar cambios';
+    }
+  });
+}
+
+/* ============================================================
+   EXPORTAR CSV (una fila por persona: asociado + cada familiar)
+============================================================ */
+function exportCSV(){
+  if(registrosCache.length === 0){
+    showToast('No hay registros para exportar.');
+    return;
+  }
+  const headers = ['id_registro','tipo_registro','parentesco','tipo_id','numero_id','lugar_expedicion','fecha_expedicion','nombre','fecha_nacimiento','correo','sexo','identidad_genero','nivel_educativo','profesion','ocupacion','grupo_etnico','discapacidad','victima_conflicto','desplazado'];
+  const rows = [headers.join(',')];
+
+  const csvCell = (v) => `"${(v||'').toString().replace(/"/g,'""')}"`;
+
+  registrosCache.forEach(r=>{
+    const a = r.asociado;
+    rows.push([r.id,'Asociado','',a.tipo_id,a.numero_id,a.lugar_expedicion,a.fecha_expedicion,a.nombre,a.fecha_nacimiento,a.correo,a.sexo,a.identidad_genero,a.nivel_educativo,a.profesion,a.ocupacion,a.grupo_etnico,a.discapacidad,a.victima_conflicto,a.desplazado].map(csvCell).join(','));
+    r.grupo_familiar.forEach(f=>{
+      rows.push([r.id,'Familiar',f.parentesco,f.tipo_id,f.numero_id,f.lugar_expedicion,'',f.nombre,f.fecha_nacimiento,f.correo,f.sexo,f.identidad_genero,f.nivel_educativo,f.profesion,f.ocupacion,f.grupo_etnico,f.discapacidad,f.victima_conflicto,f.desplazado].map(csvCell).join(','));
+    });
+  });
+
+  const blob = new Blob([rows.join('\n')], {type:'text/csv;charset=utf-8;'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'asocamgua_registros.csv';
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+document.getElementById('detail-overlay').addEventListener('click', (e)=>{
+  if(e.target.id === 'detail-overlay') closeDetail();
+});
+</script>
+</body>
+</html>
